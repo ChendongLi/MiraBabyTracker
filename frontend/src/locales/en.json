@@ -1,0 +1,39 @@
+{
+  "app": {
+    "name": "Mira"
+  },
+  "tabs": {
+    "log": "Log",
+    "stats": "Stats"
+  },
+  "input": {
+    "placeholder": "Log an activity, e.g. Mira drank 120ml",
+    "submit": "Send"
+  },
+  "mic": {
+    "start": "Hold to speak",
+    "recording": "Recording…",
+    "error_permission": "Microphone permission required",
+    "error_network": "Upload failed, please try again"
+  },
+  "events": {
+    "feed": "Feed",
+    "diaper": "Diaper",
+    "sleep": "Sleep",
+    "outdoor": "Outdoor",
+    "bath": "Bath",
+    "unknown": "Other"
+  },
+  "summary": {
+    "last_feed": "Last feed",
+    "last_sleep": "Last sleep",
+    "last_diaper": "Last diaper",
+    "ago": "ago",
+    "no_data": "No records yet"
+  },
+  "errors": {
+    "submit_failed": "Submit failed, please try again",
+    "network": "Network error, please retry",
+    "no_speech": "No speech detected, please try again"
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "app": {
+    "name": "啵儿啵儿"
+  },
+  "tabs": {
+    "log": "记录",
+    "stats": "统计"
+  },
+  "input": {
+    "placeholder": "输入活动，例如：啵儿啵儿喝了150毫升",
+    "submit": "发送"
+  },
+  "mic": {
+    "start": "按住说话",
+    "recording": "录音中…",
+    "error_permission": "请允许麦克风权限",
+    "error_network": "录音上传失败，请重试"
+  },
+  "events": {
+    "feed": "喂奶",
+    "diaper": "换尿布",
+    "sleep": "睡眠",
+    "outdoor": "户外",
+    "bath": "洗澡",
+    "unknown": "其他"
+  },
+  "summary": {
+    "last_feed": "上次喂奶",
+    "last_sleep": "上次睡眠",
+    "last_diaper": "上次换尿布",
+    "ago": "前",
+    "no_data": "暂无记录"
+  },
+  "errors": {
+    "submit_failed": "提交失败，请重试",
+    "network": "网络错误，请重试",
+    "no_speech": "未检测到声音，请重试"
+  }
+}
