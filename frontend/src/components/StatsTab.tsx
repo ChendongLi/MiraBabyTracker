@@ -42,7 +42,27 @@ export default function StatsTab() {
   // Build today's feed line chart (Pacific Time)
   const TZ = 'America/Los_Angeles';
   const todayPT = formatTZ(new Date(), 'yyyy-MM-dd', { timeZone: TZ });
-  const feedChartData = weekEvents
+  // Today's outdoor/bath activity rows (Pacific Time)
+  const activityRows = weekEvents
+    .filter((e) => ['outdoor', 'bath', 'unknown'].includes(e.event_type) && e.created_at.startsWith(todayPT.substring(0, 10)))
+    .map((e) => ({
+      time: formatTZ(new Date(e.created_at), 'h:mm a', { timeZone: TZ }),
+      type: e.event_type,
+      duration: e.duration_minutes ? `${e.duration_minutes}min` : '—',
+      notes: e.notes || e.raw_input || '—',
+    }))
+    .sort((a, b) => a.time.localeCompare(b.time));
+
+  // Today's diaper rows (Pacific Time)
+  const diaperRows = weekEvents
+    .filter((e) => e.event_type === 'diaper' && e.created_at.startsWith(todayPT.substring(0, 10)))
+    .map((e) => ({
+      time: formatTZ(new Date(e.created_at), 'h:mm a', { timeZone: TZ }),
+      type: e.diaper_type || '—',
+    }))
+    .sort((a, b) => a.time.localeCompare(b.time));
+
+  const  feedChartData = weekEvents
     .filter((e) => e.event_type === 'feed' && e.feed_amount_ml && e.created_at.startsWith(todayPT.substring(0, 10)))
     .map((e) => ({
       time: formatTZ(new Date(e.created_at), 'h:mm a', { timeZone: TZ }),
@@ -121,6 +141,60 @@ export default function StatsTab() {
               <Bar dataKey="ml" fill="#ff6b6b" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
+        )}
+      </div>
+
+      {/* Activity table */}
+      <div style={{ background: '#fff', borderRadius: 12, padding: '16px', boxShadow: '0 1px 3px rgba(0,0,0,0.06)', marginTop: 16 }}>
+        <div style={{ fontWeight: 600, marginBottom: 12, fontSize: 14 }}>🌳 今日活动记录</div>
+        {activityRows.length === 0 ? (
+          <div style={{ textAlign: 'center', color: '#ccc', fontSize: 13, padding: '16px 0' }}>暂无活动记录</div>
+        ) : (
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+            <thead>
+              <tr style={{ color: '#888', borderBottom: '1px solid #f0f0f0' }}>
+                <th style={{ textAlign: 'left', padding: '6px 8px', fontWeight: 500 }}>时间</th>
+                <th style={{ textAlign: 'left', padding: '6px 8px', fontWeight: 500 }}>类型</th>
+                <th style={{ textAlign: 'left', padding: '6px 8px', fontWeight: 500 }}>时长</th>
+                <th style={{ textAlign: 'left', padding: '6px 8px', fontWeight: 500 }}>备注</th>
+              </tr>
+            </thead>
+            <tbody>
+              {activityRows.map((row, i) => (
+                <tr key={i} style={{ borderBottom: '1px solid #f8f8f8' }}>
+                  <td style={{ padding: '8px 8px', color: '#555' }}>{row.time}</td>
+                  <td style={{ padding: '8px 8px' }}>{row.type === 'outdoor' ? '🌳 出去玩' : row.type === 'bath' ? '🛁 洗澡' : '📝 其他'}</td>
+                  <td style={{ padding: '8px 8px', color: '#555' }}>{row.duration}</td>
+                  <td style={{ padding: '8px 8px', color: '#888', maxWidth: 120, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{row.notes}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
+
+      {/* Diaper table */}
+      <div style={{ background: '#fff', borderRadius: 12, padding: '16px', boxShadow: '0 1px 3px rgba(0,0,0,0.06)', marginTop: 16, marginBottom: 16 }}>
+        <div style={{ fontWeight: 600, marginBottom: 12, fontSize: 14 }}>💧 今日换尿布时间</div>
+        {diaperRows.length === 0 ? (
+          <div style={{ textAlign: 'center', color: '#ccc', fontSize: 13, padding: '16px 0' }}>暂无换尿布记录</div>
+        ) : (
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+            <thead>
+              <tr style={{ color: '#888', borderBottom: '1px solid #f0f0f0' }}>
+                <th style={{ textAlign: 'left', padding: '6px 8px', fontWeight: 500 }}>时间 (PT)</th>
+                <th style={{ textAlign: 'left', padding: '6px 8px', fontWeight: 500 }}>类型</th>
+              </tr>
+            </thead>
+            <tbody>
+              {diaperRows.map((row, i) => (
+                <tr key={i} style={{ borderBottom: '1px solid #f8f8f8' }}>
+                  <td style={{ padding: '8px 8px', color: '#555' }}>{row.time}</td>
+                  <td style={{ padding: '8px 8px' }}>{row.type === 'wet' ? '💦 湿' : row.type === 'soiled' ? '💩 脏' : row.type === 'mixed' ? '💦💩 混合' : row.type}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         )}
       </div>
     </div>
