@@ -33,6 +33,7 @@ Rules:
 - If times are relative (e.g. "just now", "刚才"), use current_time as reference.
 - If duration is given without start/end, calculate what you can.
 - If input is unclear, set event_type to "unknown" and put best guess in notes.
+- For diapers: default diaper_type to "wet" unless poo/soiled/stinky is explicitly mentioned, then use "soiled". Use "mixed" only if both are mentioned.
 - detect_language from the dominant language in the input.
 """
 
