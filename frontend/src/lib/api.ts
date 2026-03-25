@@ -1,3 +1,5 @@
+export type STTProvider = 'whisper' | 'deepgram';
+
 export interface LogResponse {
   confirmation: string;
   event_id: string;
@@ -42,10 +44,14 @@ export async function logActivity(input: string): Promise<LogResponse> {
   return res.json();
 }
 
-export async function transcribeAudio(blob: Blob, filename = 'audio.webm'): Promise<string> {
+export async function transcribeAudio(
+  blob: Blob,
+  filename = 'audio.webm',
+  provider: STTProvider = 'whisper'
+): Promise<string> {
   const form = new FormData();
   form.append('file', blob, filename);
-  const res = await fetch('/api/transcribe', { method: 'POST', body: form });
+  const res = await fetch(`/api/transcribe?provider=${provider}`, { method: 'POST', body: form });
   if (!res.ok) throw new Error(`Transcribe failed: ${res.status}`);
   const data = await res.json();
   return data.transcript;
