@@ -8,6 +8,7 @@ import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
 } from 'recharts';
 import { format, subDays } from 'date-fns';
+import { format as formatTZ } from 'date-fns-tz';
 
 export default function StatsTab() {
   const { t } = useTranslation();
@@ -37,6 +38,17 @@ export default function StatsTab() {
       .reduce((sum, e) => sum + (e.duration_minutes ?? 0), 0);
     return { date: d, hours: +(totalMins / 60).toFixed(1) };
   });
+
+  // Build today's feed line chart (Pacific Time)
+  const TZ = 'America/Los_Angeles';
+  const todayPT = formatTZ(new Date(), 'yyyy-MM-dd', { timeZone: TZ });
+  const feedChartData = weekEvents
+    .filter((e) => e.event_type === 'feed' && e.feed_amount_ml && e.created_at.startsWith(todayPT.substring(0, 10)))
+    .map((e) => ({
+      time: formatTZ(new Date(e.created_at), 'h:mm a', { timeZone: TZ }),
+      ml: e.feed_amount_ml ?? 0,
+    }))
+    .sort((a, b) => a.time.localeCompare(b.time));
 
   if (loading) {
     return <div style={{ textAlign: 'center', marginTop: 48, color: '#aaa' }}>…</div>;
@@ -92,6 +104,24 @@ export default function StatsTab() {
             <Bar dataKey="hours" fill="#6c8ebf" radius={[4, 4, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
+      </div>
+
+      {/* Today's feed line chart */}
+      <div style={{ background: '#fff', borderRadius: 12, padding: '16px', boxShadow: '0 1px 3px rgba(0,0,0,0.06)', marginTop: 16 }}>
+        <div style={{ fontWeight: 600, marginBottom: 12, fontSize: 14 }}>🍼 今日喂奶量 (ml) — Pacific Time</div>
+        {feedChartData.length === 0 ? (
+          <div style={{ textAlign: 'center', color: '#ccc', fontSize: 13, padding: '24px 0' }}>暂无喂奶记录</div>
+        ) : (
+          <ResponsiveContainer width="100%" height={160}>
+            <BarChart data={feedChartData} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+              <XAxis dataKey="time" tick={{ fontSize: 10 }} />
+              <YAxis tick={{ fontSize: 11 }} unit="ml" />
+              <Tooltip formatter={(v) => [`${v}ml`, '奶量']} />
+              <Bar dataKey="ml" fill="#ff6b6b" radius={[4, 4, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        )}
       </div>
     </div>
   );
