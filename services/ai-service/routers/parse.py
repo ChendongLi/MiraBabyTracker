@@ -3,6 +3,7 @@
 import json
 import logging
 import os
+import time
 from datetime import datetime, timezone
 
 import anthropic
@@ -70,24 +71,47 @@ async def parse_activity(request: ParseRequest) -> ParseResponse:
     client = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
     current_time = datetime.now(timezone.utc).isoformat()
 
-    try:
-        message = client.messages.create(
-            model="claude-3-haiku-20240307",
-            max_tokens=512,
-            system=SYSTEM_PROMPT,
-            messages=[
-                {
-                    "role": "user",
-                    "content": f"current_time: {current_time}\n\ninput: {request.input}",
-                }
-            ],
-        )
-        raw = message.content[0].text.strip()
-        data = json.loads(raw)
-        return ParseResponse(**data)
-    except json.JSONDecodeError as e:
-        logger.error("Claude returned invalid JSON: %s", e)
-        raise HTTPException(status_code=502, detail="AI service returned invalid response") from e
-    except anthropic.APIError as e:
-        logger.error("Claude API error: %s", e)
-        raise HTTPException(status_code=502, detail="AI service unavailable") from e
+    max_retries = 3
+    last_error: Exception | None = None
+
+    for attempt in range(max_retries):
+        try:
+            message = client.messages.create(
+                model="claude-3-haiku-20240307",
+                max_tokens=512,
+                system=SYSTEM_PROMPT,
+                messages=[
+                    {
+                        "role": "user",
+                        "content": f"current_time: {current_time}\n\ninput: {request.input}",
+                    }
+                ],
+            )
+            raw = message.content[0].text.strip()
+            data = json.loads(raw)
+            return ParseResponse(**data)
+        except json.JSONDecodeError as e:
+            logger.error("Claude returned invalid JSON (attempt %d): %s", attempt + 1, e)
+            last_error = e
+            # Don't retry JSON decode errors — bad output won't improve on retry
+            raise HTTPException(status_code=502, detail="AI service returned invalid response") from e
+        except anthropic.InternalServerError as e:
+            logger.warning("Claude internal server error (attempt %d/%d): %s", attempt + 1, max_retries, e)
+            last_error = e
+            if attempt < max_retries - 1:
+                time.sleep(2 ** attempt)  # exponential backoff: 1s, 2s
+                continue
+        except anthropic.APIStatusError as e:
+            if e.status_code in (529, 503, 502) and attempt < max_retries - 1:
+                logger.warning("Claude API status %d (attempt %d/%d), retrying...", e.status_code, attempt + 1, max_retries)
+                last_error = e
+                time.sleep(2 ** attempt)
+                continue
+            logger.error("Claude API error: %s", e)
+            raise HTTPException(status_code=502, detail="AI service unavailable") from e
+        except anthropic.APIError as e:
+            logger.error("Claude API error: %s", e)
+            raise HTTPException(status_code=502, detail="AI service unavailable") from e
+
+    logger.error("Claude failed after %d attempts: %s", max_retries, last_error)
+    raise HTTPException(status_code=502, detail="AI service unavailable after retries")
