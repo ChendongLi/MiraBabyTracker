@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { getSummary, getWeekEvents, type SummaryResponse, type EventRow } from '@/lib/api';
 import { formatDistanceToNow } from 'date-fns';
 import {
-  BarChart, Bar, LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
+  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
 } from 'recharts';
 import { format, subDays } from 'date-fns';
 import { format as formatTZ } from 'date-fns-tz';
@@ -113,13 +113,13 @@ export default function StatsTab() {
           <div style={{ textAlign: 'center', color: '#ccc', fontSize: 13, padding: '24px 0' }}>暂无喂奶记录</div>
         ) : (
           <ResponsiveContainer width="100%" height={160}>
-            <LineChart data={feedChartData} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
+            <BarChart data={feedChartData} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
               <XAxis dataKey="time" tick={{ fontSize: 10 }} />
               <YAxis tick={{ fontSize: 11 }} unit="ml" />
               <Tooltip formatter={(v) => [`${v}ml`, '奶量']} />
-              <Line type="monotone" dataKey="ml" stroke="#ff6b6b" strokeWidth={2} dot={{ r: 4, fill: '#ff6b6b' }} activeDot={{ r: 6 }} />
-            </LineChart>
+              <Bar dataKey="ml" fill="#ff6b6b" radius={[4, 4, 0, 0]} />
+            </BarChart>
           </ResponsiveContainer>
         )}
       </div>
