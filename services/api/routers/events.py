@@ -34,10 +34,12 @@ class EventRow(BaseModel):
 class SummaryResponse(BaseModel):
     date: str
     total_sleep_minutes: int
+    sleep_count: int
     feed_count: int
     total_feed_ml: int
     diaper_count: int
     last_feed_at: datetime | None
+    last_sleep_at: datetime | None
     last_sleep_end_at: datetime | None
     last_diaper_at: datetime | None
 
@@ -81,11 +83,13 @@ async def get_summary(date_str: str = Query(default=None, alias="date")) -> Summ
         cur.execute(
             """
             SELECT
-                COALESCE(SUM(CASE WHEN event_type = 'sleep' THEN duration_minutes ELSE 0 END), 0) AS total_sleep_minutes,
+                COALESCE(SUM(CASE WHEN event_type = 'sleep' THEN COALESCE(duration_minutes, 0) ELSE 0 END), 0) AS total_sleep_minutes,
+                COUNT(CASE WHEN event_type = 'sleep' THEN 1 END) AS sleep_count,
                 COUNT(CASE WHEN event_type = 'feed' THEN 1 END) AS feed_count,
                 COALESCE(SUM(CASE WHEN event_type = 'feed' THEN fd.amount_ml ELSE 0 END), 0) AS total_feed_ml,
                 COUNT(CASE WHEN event_type = 'diaper' THEN 1 END) AS diaper_count,
                 MAX(CASE WHEN event_type = 'feed' THEN e.created_at END) AS last_feed_at,
+                MAX(CASE WHEN event_type = 'sleep' THEN e.created_at END) AS last_sleep_at,
                 MAX(CASE WHEN event_type = 'sleep' THEN e.ended_at END) AS last_sleep_end_at,
                 MAX(CASE WHEN event_type = 'diaper' THEN e.created_at END) AS last_diaper_at
             FROM events e

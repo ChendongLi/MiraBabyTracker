@@ -22,10 +22,12 @@ export interface EventRow {
 export interface SummaryResponse {
   date: string;
   total_sleep_minutes: number;
+  sleep_count: number;
   feed_count: number;
   total_feed_ml: number;
   diaper_count: number;
   last_feed_at: string | null;
+  last_sleep_at: string | null;
   last_sleep_end_at: string | null;
   last_diaper_at: string | null;
 }

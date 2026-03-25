@@ -48,7 +48,7 @@ export default function StatsTab() {
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10, marginBottom: 24 }}>
         {[
           { label: t('summary.last_feed'), value: summary?.last_feed_at },
-          { label: t('summary.last_sleep'), value: summary?.last_sleep_end_at },
+          { label: t('summary.last_sleep'), value: summary?.last_sleep_at ?? summary?.last_sleep_end_at },
           { label: t('summary.last_diaper'), value: summary?.last_diaper_at },
         ].map(({ label, value }) => (
           <div key={label} style={{ background: '#fff', borderRadius: 12, padding: '12px 10px', textAlign: 'center', boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
@@ -65,7 +65,11 @@ export default function StatsTab() {
       {/* Today totals */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10, marginBottom: 24 }}>
         {[
-          { label: '💤 睡眠', value: summary ? `${(summary.total_sleep_minutes / 60).toFixed(1)}h` : '--' },
+          { label: '💤 睡眠', value: summary
+            ? summary.total_sleep_minutes > 0
+              ? `${(summary.total_sleep_minutes / 60).toFixed(1)}h`
+              : `${summary.sleep_count}次`
+            : '--' },
           { label: '🍼 总奶量', value: summary ? `${summary.total_feed_ml}ml` : '--' },
           { label: '💧 换尿布', value: summary ? `${summary.diaper_count}次` : '--' },
         ].map(({ label, value }) => (
