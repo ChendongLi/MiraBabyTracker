@@ -1,7 +1,7 @@
 'use client';
 
 import { useTranslation } from 'react-i18next';
-import { formatDistanceToNow } from 'date-fns';
+import { format } from 'date-fns-tz';
 import type { EventRow } from '@/lib/api';
 
 const EVENT_EMOJI: Record<string, string> = {
@@ -59,7 +59,7 @@ export default function EventFeed({ events }: Props) {
             )}
           </div>
           <div style={{ fontSize: 12, color: '#bbb', flexShrink: 0, paddingTop: 2 }}>
-            {formatDistanceToNow(new Date(ev.created_at), { addSuffix: true })}
+            {format(new Date(ev.created_at), 'h:mm a', { timeZone: 'America/Los_Angeles' })}
           </div>
         </div>
       ))}
