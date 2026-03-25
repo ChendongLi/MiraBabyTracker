@@ -6,6 +6,7 @@ import os
 from datetime import datetime, timezone
 
 import anthropic
+import openai
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
@@ -61,6 +62,24 @@ class ParseResponse(BaseModel):
     diaper_details: DiaperDetails | None = None
 
 
+
+async def _parse_with_openai(input_text: str, current_time: str) -> ParseResponse:
+    """Fallback parser using OpenAI GPT-4o-mini."""
+    client = openai.OpenAI(api_key=os.environ["OPENAI_API_KEY"])
+    response = client.chat.completions.create(
+        model="gpt-4o-mini",
+        max_tokens=512,
+        messages=[
+            {"role": "system", "content": SYSTEM_PROMPT},
+            {"role": "user", "content": f"current_time: {current_time}\n\ninput: {input_text}"},
+        ],
+        response_format={"type": "json_object"},
+    )
+    raw = response.choices[0].message.content.strip()
+    data = json.loads(raw)
+    return ParseResponse(**data)
+
+
 @router.post("/parse", response_model=ParseResponse)
 async def parse_activity(request: ParseRequest) -> ParseResponse:
     """Parse natural language input into structured baby activity data."""
@@ -85,9 +104,12 @@ async def parse_activity(request: ParseRequest) -> ParseResponse:
         raw = message.content[0].text.strip()
         data = json.loads(raw)
         return ParseResponse(**data)
-    except json.JSONDecodeError as e:
-        logger.error("Claude returned invalid JSON: %s", e)
-        raise HTTPException(status_code=502, detail="AI service returned invalid response") from e
-    except anthropic.APIError as e:
-        logger.error("Claude API error: %s", e)
-        raise HTTPException(status_code=502, detail="AI service unavailable") from e
+    except Exception as e:
+        logger.warning("Claude failed (%s), falling back to OpenAI: %s", type(e).__name__, e)
+        try:
+            result = await _parse_with_openai(request.input, current_time)
+            logger.info("OpenAI fallback succeeded")
+            return result
+        except Exception as fe:
+            logger.error("OpenAI fallback also failed: %s", fe)
+            raise HTTPException(status_code=502, detail="AI service unavailable") from fe

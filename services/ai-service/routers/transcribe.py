@@ -64,25 +64,27 @@ async def transcribe_audio(file: UploadFile, provider: str = "whisper") -> Trans
     if len(audio_bytes) > MAX_AUDIO_SIZE_BYTES:
         raise HTTPException(status_code=400, detail="Audio file too large (max 25MB)")
 
-    try:
-        if provider == "deepgram":
-            transcript = await _transcribe_deepgram(audio_bytes, file.content_type or "audio/webm")
-        else:
-            transcript = await _transcribe_whisper(audio_bytes, file.filename or "audio.webm", file.content_type or "audio/webm")
+    content_type = file.content_type or "audio/webm"
+    filename = file.filename or "audio.webm"
 
-        if not transcript:
-            raise HTTPException(status_code=422, detail="No speech detected in audio")
+    if provider == "deepgram":
+        try:
+            transcript = await _transcribe_deepgram(audio_bytes, content_type)
+        except Exception as e:
+            logger.warning("Deepgram failed (%s), falling back to Whisper: %s", type(e).__name__, e)
+            try:
+                transcript = await _transcribe_whisper(audio_bytes, filename, content_type)
+            except Exception as fe:
+                logger.error("Whisper fallback also failed: %s", fe)
+                raise HTTPException(status_code=502, detail="Transcription service unavailable") from fe
+    else:
+        try:
+            transcript = await _transcribe_whisper(audio_bytes, filename, content_type)
+        except Exception as e:
+            logger.error("Whisper error: %s", e)
+            raise HTTPException(status_code=502, detail="Transcription service unavailable") from e
 
-        return TranscribeResponse(transcript=transcript)
+    if not transcript:
+        raise HTTPException(status_code=422, detail="No speech detected in audio")
 
-    except HTTPException:
-        raise
-    except openai.APITimeoutError as e:
-        logger.error("Whisper timeout: %s", e)
-        raise HTTPException(status_code=504, detail="Transcription timed out") from e
-    except openai.APIError as e:
-        logger.error("Whisper API error: %s", e)
-        raise HTTPException(status_code=502, detail="Transcription service unavailable") from e
-    except httpx.TimeoutException as e:
-        logger.error("Deepgram timeout: %s", e)
-        raise HTTPException(status_code=504, detail="Transcription timed out") from e
+    return TranscribeResponse(transcript=transcript)
