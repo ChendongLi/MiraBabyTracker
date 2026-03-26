@@ -7,7 +7,7 @@
     "stats": "📊 统计"
   },
   "input": {
-    "placeholder": "输入活动，例如：啵儿啵儿喝了150毫升",
+    "placeholder": "输入活动，例如：喝了150毫升",
     "submit": "发送"
   },
   "mic": {
