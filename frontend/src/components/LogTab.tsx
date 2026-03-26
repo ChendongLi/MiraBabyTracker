@@ -2,13 +2,8 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { logActivity, transcribeAudio, getEvents, type EventRow, type STTProvider } from '@/lib/api';
+import { logActivity, transcribeAudio, getEvents, type EventRow } from '@/lib/api';
 import EventFeed from './EventFeed';
-
-const STT_PROVIDERS: { value: STTProvider; label: string; badge: string }[] = [
-  { value: 'whisper', label: 'Whisper', badge: '🤖' },
-  { value: 'deepgram', label: 'Deepgram Nova-2', badge: '⚡' },
-];
 
 export default function LogTab() {
   const { t } = useTranslation();
@@ -18,21 +13,12 @@ export default function LogTab() {
   const [events, setEvents] = useState<EventRow[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [confirmation, setConfirmation] = useState<string | null>(null);
-  const [sttProvider, setSttProvider] = useState<STTProvider>('whisper');
   const mediaRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
 
   useEffect(() => {
-    // Restore saved provider preference
-    const saved = localStorage.getItem('sttProvider') as STTProvider | null;
-    if (saved === 'whisper' || saved === 'deepgram') setSttProvider(saved);
     getEvents().then(setEvents).catch(console.error);
   }, []);
-
-  function handleProviderChange(p: STTProvider) {
-    setSttProvider(p);
-    localStorage.setItem('sttProvider', p);
-  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -72,7 +58,7 @@ export default function LogTab() {
         if (blob.size === 0) { setError(t('errors.no_speech')); return; }
         setLoading(true);
         try {
-          const transcript = await transcribeAudio(blob, `audio.${ext}`, sttProvider);
+          const transcript = await transcribeAudio(blob, `audio.${ext}`, 'deepgram');
           setInput(transcript);
         } catch {
           setError(t('mic.error_network'));
@@ -130,30 +116,6 @@ export default function LogTab() {
           flexShrink: 0,
         }}
       >
-        {/* STT Provider selector */}
-        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-          <span style={{ fontSize: 16, color: '#888', flexShrink: 0 }}>STT:</span>
-          {STT_PROVIDERS.map((p) => (
-            <button
-              key={p.value}
-              type="button"
-              onClick={() => handleProviderChange(p.value)}
-              style={{
-                padding: '4px 12px',
-                borderRadius: 20,
-                border: `1.5px solid ${sttProvider === p.value ? '#ff6b6b' : '#ddd'}`,
-                background: sttProvider === p.value ? '#fff0f0' : '#fafafa',
-                color: sttProvider === p.value ? '#ff6b6b' : '#666',
-                fontSize: 16,
-                fontWeight: sttProvider === p.value ? 600 : 400,
-                cursor: 'pointer',
-                transition: 'all 0.15s',
-              }}
-            >
-              {p.badge} {p.label}
-            </button>
-          ))}
-        </div>
 
         {/* Textarea */}
         <textarea

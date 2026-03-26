@@ -3,8 +3,8 @@
     "name": "Mira"
   },
   "tabs": {
-    "log": "Log",
-    "stats": "Stats"
+    "log": "🎙️ Record",
+    "stats": "📊 Stats"
   },
   "input": {
     "placeholder": "Log an activity, e.g. Mira drank 120ml",
