@@ -28,7 +28,7 @@ export default function Home() {
               padding: '14px 0',
               border: 'none',
               background: 'none',
-              fontSize: 16,
+              fontSize: 21,
               fontWeight: tab === id ? 600 : 400,
               color: tab === id ? '#ff6b6b' : '#888',
               borderBottom: tab === id ? '2px solid #ff6b6b' : '2px solid transparent',

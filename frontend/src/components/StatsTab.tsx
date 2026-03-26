@@ -84,8 +84,8 @@ export default function StatsTab() {
           { label: t('summary.last_diaper'), value: summary?.last_diaper_at },
         ].map(({ label, value }) => (
           <div key={label} style={{ background: '#fff', borderRadius: 12, padding: '12px 10px', textAlign: 'center', boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
-            <div style={{ fontSize: 11, color: '#888', marginBottom: 4 }}>{label}</div>
-            <div style={{ fontSize: 13, fontWeight: 600, color: value ? '#1a1a1a' : '#ccc' }}>
+            <div style={{ fontSize: 14, color: '#888', marginBottom: 4 }}>{label}</div>
+            <div style={{ fontSize: 17, fontWeight: 600, color: value ? '#1a1a1a' : '#ccc' }}>
               {value
                 ? formatDistanceToNow(new Date(value), { addSuffix: true })
                 : t('summary.no_data')}
@@ -106,20 +106,20 @@ export default function StatsTab() {
           { label: '💧 换尿布', value: summary ? `${summary.diaper_count}次` : '--' },
         ].map(({ label, value }) => (
           <div key={label} style={{ background: '#fff', borderRadius: 12, padding: '12px 10px', textAlign: 'center', boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
-            <div style={{ fontSize: 11, color: '#888', marginBottom: 4 }}>{label}</div>
-            <div style={{ fontSize: 18, fontWeight: 700 }}>{value}</div>
+            <div style={{ fontSize: 14, color: '#888', marginBottom: 4 }}>{label}</div>
+            <div style={{ fontSize: 23, fontWeight: 700 }}>{value}</div>
           </div>
         ))}
       </div>
 
       {/* Sleep chart */}
       <div style={{ background: '#fff', borderRadius: 12, padding: '16px', boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
-        <div style={{ fontWeight: 600, marginBottom: 12, fontSize: 14 }}>😴 近7天睡眠（小时）</div>
+        <div style={{ fontWeight: 600, marginBottom: 12, fontSize: 23 }}>😴 近7天睡眠（小时）</div>
         <ResponsiveContainer width="100%" height={160}>
           <BarChart data={sleepChartData} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-            <XAxis dataKey="date" tick={{ fontSize: 11 }} />
-            <YAxis tick={{ fontSize: 11 }} />
+            <XAxis dataKey="date" tick={{ fontSize: 18 }} />
+            <YAxis tick={{ fontSize: 18 }} />
             <Tooltip formatter={(v) => [`${v}h`, '睡眠']} />
             <Bar dataKey="hours" fill="#6c8ebf" radius={[4, 4, 0, 0]} />
           </BarChart>
@@ -128,15 +128,15 @@ export default function StatsTab() {
 
       {/* Today's feed line chart */}
       <div style={{ background: '#fff', borderRadius: 12, padding: '16px', boxShadow: '0 1px 3px rgba(0,0,0,0.06)', marginTop: 16 }}>
-        <div style={{ fontWeight: 600, marginBottom: 12, fontSize: 14 }}>🍼 今日喂奶量 (ml) — Pacific Time</div>
+        <div style={{ fontWeight: 600, marginBottom: 12, fontSize: 23 }}>🍼 今日喂奶量 (ml) — Pacific Time</div>
         {feedChartData.length === 0 ? (
-          <div style={{ textAlign: 'center', color: '#ccc', fontSize: 13, padding: '24px 0' }}>暂无喂奶记录</div>
+          <div style={{ textAlign: 'center', color: '#ccc', fontSize: 17, padding: '24px 0' }}>暂无喂奶记录</div>
         ) : (
           <ResponsiveContainer width="100%" height={160}>
             <BarChart data={feedChartData} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-              <XAxis dataKey="time" tick={{ fontSize: 10 }} />
-              <YAxis tick={{ fontSize: 11 }} unit="ml" />
+              <XAxis dataKey="time" tick={{ fontSize: 17 }} />
+              <YAxis tick={{ fontSize: 18 }} unit="ml" />
               <Tooltip formatter={(v) => [`${v}ml`, '奶量']} />
               <Bar dataKey="ml" fill="#ff6b6b" radius={[4, 4, 0, 0]} />
             </BarChart>
@@ -146,11 +146,11 @@ export default function StatsTab() {
 
       {/* Activity table */}
       <div style={{ background: '#fff', borderRadius: 12, padding: '16px', boxShadow: '0 1px 3px rgba(0,0,0,0.06)', marginTop: 16 }}>
-        <div style={{ fontWeight: 600, marginBottom: 12, fontSize: 14 }}>🌳 今日活动记录</div>
+        <div style={{ fontWeight: 600, marginBottom: 12, fontSize: 23 }}>🌳 今日活动记录</div>
         {activityRows.length === 0 ? (
-          <div style={{ textAlign: 'center', color: '#ccc', fontSize: 13, padding: '16px 0' }}>暂无活动记录</div>
+          <div style={{ textAlign: 'center', color: '#ccc', fontSize: 17, padding: '16px 0' }}>暂无活动记录</div>
         ) : (
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 22 }}>
             <thead>
               <tr style={{ color: '#888', borderBottom: '1px solid #f0f0f0' }}>
                 <th style={{ textAlign: 'left', padding: '6px 8px', fontWeight: 500 }}>时间</th>
@@ -175,11 +175,11 @@ export default function StatsTab() {
 
       {/* Diaper table */}
       <div style={{ background: '#fff', borderRadius: 12, padding: '16px', boxShadow: '0 1px 3px rgba(0,0,0,0.06)', marginTop: 16, marginBottom: 16 }}>
-        <div style={{ fontWeight: 600, marginBottom: 12, fontSize: 14 }}>💧 今日换尿布时间</div>
+        <div style={{ fontWeight: 600, marginBottom: 12, fontSize: 23 }}>💧 今日换尿布时间</div>
         {diaperRows.length === 0 ? (
-          <div style={{ textAlign: 'center', color: '#ccc', fontSize: 13, padding: '16px 0' }}>暂无换尿布记录</div>
+          <div style={{ textAlign: 'center', color: '#ccc', fontSize: 17, padding: '16px 0' }}>暂无换尿布记录</div>
         ) : (
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 22 }}>
             <thead>
               <tr style={{ color: '#888', borderBottom: '1px solid #f0f0f0' }}>
                 <th style={{ textAlign: 'left', padding: '6px 8px', fontWeight: 500 }}>时间 (PT)</th>

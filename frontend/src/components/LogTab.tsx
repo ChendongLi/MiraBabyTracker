@@ -105,14 +105,14 @@ export default function LogTab() {
 
       {/* Error */}
       {error && (
-        <div style={{ padding: '8px 16px', background: '#fff3f3', color: '#c0392b', fontSize: 14 }}>
+        <div style={{ padding: '8px 16px', background: '#fff3f3', color: '#c0392b', fontSize: 23 }}>
           {error}
         </div>
       )}
 
       {/* Confirmation */}
       {confirmation && (
-        <div style={{ padding: '10px 16px', background: '#f0fff4', color: '#27ae60', fontSize: 15, fontWeight: 500, textAlign: 'center' }}>
+        <div style={{ padding: '10px 16px', background: '#f0fff4', color: '#27ae60', fontSize: 20, fontWeight: 500, textAlign: 'center' }}>
           {confirmation}
         </div>
       )}
@@ -132,7 +132,7 @@ export default function LogTab() {
       >
         {/* STT Provider selector */}
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-          <span style={{ fontSize: 12, color: '#888', flexShrink: 0 }}>STT:</span>
+          <span style={{ fontSize: 16, color: '#888', flexShrink: 0 }}>STT:</span>
           {STT_PROVIDERS.map((p) => (
             <button
               key={p.value}
@@ -144,7 +144,7 @@ export default function LogTab() {
                 border: `1.5px solid ${sttProvider === p.value ? '#ff6b6b' : '#ddd'}`,
                 background: sttProvider === p.value ? '#fff0f0' : '#fafafa',
                 color: sttProvider === p.value ? '#ff6b6b' : '#666',
-                fontSize: 12,
+                fontSize: 16,
                 fontWeight: sttProvider === p.value ? 600 : 400,
                 cursor: 'pointer',
                 transition: 'all 0.15s',
@@ -173,7 +173,7 @@ export default function LogTab() {
             padding: '14px 16px',
             borderRadius: 16,
             border: '1.5px solid #ddd',
-            fontSize: 16,
+            fontSize: 21,
             lineHeight: 1.5,
             outline: 'none',
             resize: 'none',
@@ -207,7 +207,7 @@ export default function LogTab() {
                 background: recording
                   ? 'linear-gradient(135deg,#ff6b6b,#ee5a24)'
                   : 'linear-gradient(135deg,#f5f5f5,#e5e5e5)',
-                fontSize: 32,
+                fontSize: 42,
                 cursor: loading ? 'not-allowed' : 'pointer',
                 transition: 'background 0.2s, transform 0.1s, box-shadow 0.2s',
                 boxShadow: recording ? '0 6px 24px rgba(255,107,107,0.5)' : '0 2px 10px rgba(0,0,0,0.13)',
@@ -224,7 +224,7 @@ export default function LogTab() {
 
           {/* Right: hint + send */}
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 6 }}>
-            <span style={{ fontSize: 13, fontWeight: 500, color: recording ? '#ff6b6b' : '#ccc', transition: 'color 0.2s' }}>
+            <span style={{ fontSize: 17, fontWeight: 500, color: recording ? '#ff6b6b' : '#ccc', transition: 'color 0.2s' }}>
               {recording ? '🔴 Recording… release to stop' : 'Hold to record'}
             </span>
             <button
@@ -233,7 +233,7 @@ export default function LogTab() {
               style={{
                 height: 50, borderRadius: 14, border: 'none',
                 background: input.trim() && !loading ? '#ff6b6b' : '#e0e0e0',
-                color: '#fff', fontSize: 16, fontWeight: 600,
+                color: '#fff', fontSize: 21, fontWeight: 600,
                 cursor: input.trim() && !loading ? 'pointer' : 'default',
                 transition: 'background 0.15s', letterSpacing: 0.3,
               }}
