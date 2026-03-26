@@ -1,0 +1,35 @@
+version: '3.9'
+
+services:
+  ai-service:
+    build: ./services/ai-service
+    ports:
+      - "8001:8080"
+    env_file:
+      - ./services/ai-service/.env
+    environment:
+      - PORT=8080
+
+  api:
+    build: ./services/api
+    ports:
+      - "8000:8080"
+    env_file:
+      - ./services/api/.env
+    environment:
+      - PORT=8080
+      - AI_SERVICE_URL=http://ai-service:8080
+    depends_on:
+      - ai-service
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        API_SERVICE_URL: http://api:8080
+    ports:
+      - "3000:3000"
+    environment:
+      - API_SERVICE_URL=http://api:8080
+    depends_on:
+      - api

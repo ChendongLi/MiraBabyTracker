@@ -1,0 +1,92 @@
+name: Deploy to Cloud Run
+
+on:
+  push:
+    branches: [main]
+
+env:
+  GCP_PROJECT: agentlens-489006
+  REGION: us-central1
+  REGISTRY: us-central1-docker.pkg.dev/agentlens-489006/mira
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write   # needed for Workload Identity Federation
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Authenticate to GCP
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker
+        run: gcloud auth configure-docker us-central1-docker.pkg.dev
+
+      - name: Build & push AI service
+        run: |
+          docker build -t $REGISTRY/ai-service:$GITHUB_SHA ./services/ai-service
+          docker push $REGISTRY/ai-service:$GITHUB_SHA
+
+      - name: Build & push API service
+        run: |
+          docker build -t $REGISTRY/api:$GITHUB_SHA ./services/api
+          docker push $REGISTRY/api:$GITHUB_SHA
+
+      - name: Build & push frontend
+        run: |
+          docker build \
+            --build-arg API_SERVICE_URL=${{ secrets.API_SERVICE_URL }} \
+            -t $REGISTRY/frontend:$GITHUB_SHA ./frontend
+          docker push $REGISTRY/frontend:$GITHUB_SHA
+
+      - name: Deploy AI service
+        run: |
+          gcloud run deploy mira-ai-service \
+            --image $REGISTRY/ai-service:$GITHUB_SHA \
+            --region $REGION \
+            --platform managed \
+            --no-allow-unauthenticated \
+            --memory 1Gi \
+            --min-instances 0 \
+            --max-instances 2 \
+            --set-secrets "ANTHROPIC_API_KEY=ANTHROPIC_API_KEY:latest,OPENAI_API_KEY=OPENAI_API_KEY:latest,DEEPGRAM_API_KEY=DEEPGRAM_API_KEY:latest"
+
+      - name: Deploy API service
+        run: |
+          AI_URL=$(gcloud run services describe mira-ai-service --region $REGION --format 'value(status.url)')
+          gcloud run deploy mira-api \
+            --image $REGISTRY/api:$GITHUB_SHA \
+            --region $REGION \
+            --platform managed \
+            --no-allow-unauthenticated \
+            --memory 512Mi \
+            --min-instances 0 \
+            --max-instances 2 \
+            --set-env-vars "AI_SERVICE_URL=${AI_URL}" \
+            --set-secrets "DATABASE_URL=DATABASE_URL:latest,BABY_ID=BABY_ID:latest"
+
+      - name: Deploy frontend
+        run: |
+          API_URL=$(gcloud run services describe mira-api --region $REGION --format 'value(status.url)')
+          gcloud run deploy mira-frontend \
+            --image $REGISTRY/frontend:$GITHUB_SHA \
+            --region $REGION \
+            --platform managed \
+            --allow-unauthenticated \
+            --memory 512Mi \
+            --min-instances 0 \
+            --max-instances 2 \
+            --set-env-vars "API_SERVICE_URL=${API_URL}"
+
+      - name: Print frontend URL
+        run: |
+          gcloud run services describe mira-frontend --region $REGION --format 'value(status.url)'
