@@ -3,11 +3,11 @@
     "name": "啵儿啵儿"
   },
   "tabs": {
-    "log": "记录",
-    "stats": "统计"
+    "log": "✍️ 记录",
+    "stats": "📊 统计"
   },
   "input": {
-    "placeholder": "输入活动，例如：啵儿啵儿喝了150毫升",
+    "placeholder": "输入活动，例如：喝了150毫升",
     "submit": "发送"
   },
   "mic": {

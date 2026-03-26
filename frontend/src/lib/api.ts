@@ -47,7 +47,7 @@ export async function logActivity(input: string): Promise<LogResponse> {
 export async function transcribeAudio(
   blob: Blob,
   filename = 'audio.webm',
-  provider: STTProvider = 'whisper'
+  provider: STTProvider = 'deepgram'
 ): Promise<string> {
   const form = new FormData();
   form.append('file', blob, filename);

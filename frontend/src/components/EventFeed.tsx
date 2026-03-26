@@ -22,7 +22,7 @@ export default function EventFeed({ events }: Props) {
 
   if (events.length === 0) {
     return (
-      <div style={{ textAlign: 'center', color: '#aaa', marginTop: 48, fontSize: 15 }}>
+      <div style={{ textAlign: 'center', color: '#aaa', marginTop: 48, fontSize: 26 }}>
         {t('summary.no_data')}
       </div>
     );
@@ -43,9 +43,9 @@ export default function EventFeed({ events }: Props) {
             boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
           }}
         >
-          <span style={{ fontSize: 24, lineHeight: 1 }}>{EVENT_EMOJI[ev.event_type] ?? '📝'}</span>
+          <span style={{ fontSize: 31, lineHeight: 1 }}>{EVENT_EMOJI[ev.event_type] ?? '📝'}</span>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontWeight: 600, fontSize: 15 }}>
+            <div style={{ fontWeight: 600, fontSize: 26 }}>
               {t(`events.${ev.event_type}`)}
               {ev.event_type === 'feed' && ev.feed_amount_ml ? ` · ${ev.feed_amount_ml}ml` : ''}
               {ev.event_type === 'sleep' && ev.duration_minutes
@@ -53,12 +53,12 @@ export default function EventFeed({ events }: Props) {
                 : ''}
             </div>
             {ev.raw_input && (
-              <div style={{ fontSize: 13, color: '#888', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              <div style={{ fontSize: 17, color: '#888', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 {ev.raw_input}
               </div>
             )}
           </div>
-          <div style={{ fontSize: 12, color: '#bbb', flexShrink: 0, paddingTop: 2 }}>
+          <div style={{ fontSize: 16, color: '#bbb', flexShrink: 0, paddingTop: 2 }}>
             {format(new Date(ev.created_at), 'h:mm a', { timeZone: 'America/Los_Angeles' })}
           </div>
         </div>

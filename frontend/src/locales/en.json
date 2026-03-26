@@ -3,11 +3,11 @@
     "name": "Mira"
   },
   "tabs": {
-    "log": "Log",
-    "stats": "Stats"
+    "log": "✍️ Record",
+    "stats": "📊 Stats"
   },
   "input": {
-    "placeholder": "Log an activity, e.g. Mira drank 120ml",
+    "placeholder": "Log an activity, e.g. drank 120ml",
     "submit": "Send"
   },
   "mic": {
