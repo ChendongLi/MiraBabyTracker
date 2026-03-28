@@ -75,3 +75,8 @@ export async function getWeekEvents(): Promise<EventRow[]> {
   if (!res.ok) throw new Error('Failed to fetch week events');
   return res.json();
 }
+
+export async function deleteEvent(id: string): Promise<void> {
+  const res = await fetch(`/api/events?id=${id}`, { method: 'DELETE' });
+  if (!res.ok && res.status !== 204) throw new Error(`Delete failed: ${res.status}`);
+}

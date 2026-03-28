@@ -131,3 +131,26 @@ async def get_week_events() -> list[EventRow]:
         return [EventRow(id=str(r["id"]), **{k: v for k, v in r.items() if k != "id"}) for r in rows]
     finally:
         release_conn(conn)
+
+
+@router.delete("/api/events/{event_id}", status_code=204)
+async def delete_event(event_id: str) -> None:
+    """Delete a single event (cascades to feed_details / diaper_details)."""
+    conn = get_conn()
+    try:
+        cur = conn.cursor()
+        cur.execute(
+            "DELETE FROM events WHERE id = %s AND baby_id = %s",
+            (event_id, BABY_ID),
+        )
+        if cur.rowcount == 0:
+            raise HTTPException(status_code=404, detail="Event not found")
+        conn.commit()
+        logger.info("Deleted event %s", event_id)
+    except HTTPException:
+        raise
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        release_conn(conn)
