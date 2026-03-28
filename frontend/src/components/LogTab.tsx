@@ -16,7 +16,18 @@ export default function LogTab({ initialEvents = [] }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [confirmation, setConfirmation] = useState<string | null>(null);
   const mediaRef = useRef<MediaRecorder | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);  // persistent stream
   const chunksRef = useRef<Blob[]>([]);
+
+  // Warm up mic permission on first render so the browser never asks mid-session
+  useEffect(() => {
+    navigator.mediaDevices.getUserMedia({ audio: true })
+      .then((s) => { streamRef.current = s; })
+      .catch(() => {}); // silent — user will see error when they actually tap mic
+    return () => {
+      streamRef.current?.getTracks().forEach((t) => t.stop());
+    };
+  }, []);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -37,21 +48,34 @@ export default function LogTab({ initialEvents = [] }: Props) {
     }
   }
 
+  async function getStream(): Promise<MediaStream> {
+    // Reuse existing live stream if available
+    if (streamRef.current && streamRef.current.active) {
+      return streamRef.current;
+    }
+    // Re-acquire if stream was stopped (e.g. browser suspended it)
+    const s = await navigator.mediaDevices.getUserMedia({ audio: true });
+    streamRef.current = s;
+    return s;
+  }
+
   async function startRecording() {
     setError(null);
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const stream = await getStream();
       const mimeType = MediaRecorder.isTypeSupported('audio/webm')
         ? 'audio/webm'
         : MediaRecorder.isTypeSupported('audio/mp4')
         ? 'audio/mp4'
         : '';
-      const recorder = mimeType ? new MediaRecorder(stream, { mimeType }) : new MediaRecorder(stream);
+      const recorder = mimeType
+        ? new MediaRecorder(stream, { mimeType })
+        : new MediaRecorder(stream);
       const ext = mimeType.includes('mp4') ? 'mp4' : 'webm';
       chunksRef.current = [];
       recorder.ondataavailable = (e) => chunksRef.current.push(e.data);
       recorder.onstop = async () => {
-        stream.getTracks().forEach((t) => t.stop());
+        // Don't stop stream tracks — keep stream alive for next recording
         const blob = new Blob(chunksRef.current, { type: recorder.mimeType });
         if (blob.size === 0) { setError(t('errors.no_speech')); return; }
         setLoading(true);
@@ -114,7 +138,6 @@ export default function LogTab({ initialEvents = [] }: Props) {
           flexShrink: 0,
         }}
       >
-
         {/* Textarea */}
         <textarea
           value={input}
