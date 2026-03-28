@@ -30,8 +30,13 @@ Schema:
 }
 
 Rules:
+- current_time is provided in UTC. The user is in Pacific Time (UTC-7 or UTC-8, use UTC-7 for now).
 - If times are relative (e.g. "just now", "刚才"), use current_time as reference.
-- If duration is given without start/end, calculate what you can.
+- If the user says "last night" or "昨晚", the date is yesterday (Pacific Time). Morning times (e.g. "9am") are today.
+- For sleep with both start and end: set started_at, ended_at, and compute duration_minutes = (ended_at - started_at) in minutes.
+- If only start is given, set started_at only. If only end is given, set ended_at only.
+- If only duration is given (e.g. "slept 2 hours"), set duration_minutes only.
+- For all times, convert to UTC ISO8601 (e.g. "11pm PT last night" = yesterday 06:00 UTC).
 - If input is unclear, set event_type to "unknown" and put best guess in notes.
 - For diapers: default diaper_type to "wet" unless poo/soiled/stinky is explicitly mentioned, then use "soiled". Use "mixed" only if both are mentioned.
 - detect_language from the dominant language in the input.
