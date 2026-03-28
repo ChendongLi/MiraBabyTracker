@@ -134,10 +134,10 @@ export default function StatsTab() {
           <div style={{ textAlign: 'center', color: '#ccc', fontSize: 17, padding: '24px 0' }}>暂无喂奶记录</div>
         ) : (
           <ResponsiveContainer width="100%" height={160}>
-            <BarChart data={feedChartData} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
+            <BarChart data={feedChartData} margin={{ top: 4, right: 8, left: 10, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
               <XAxis dataKey="time" tick={{ fontSize: 17 }} />
-              <YAxis tick={{ fontSize: 18 }} tickFormatter={(v) => `${v} ml`} domain={[0, 'auto']} allowDecimals={false} />
+              <YAxis tick={{ fontSize: 15 }} tickFormatter={(v) => `${v} ml`} domain={[0, 'auto']} allowDecimals={false} width={60} />
               <Tooltip formatter={(v) => [`${v} ml`, '奶量']} />
               <Bar dataKey="ml" fill="#ff6b6b" radius={[4, 4, 0, 0]} />
             </BarChart>
