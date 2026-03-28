@@ -137,8 +137,8 @@ export default function StatsTab() {
             <BarChart data={feedChartData} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
               <XAxis dataKey="time" tick={{ fontSize: 17 }} />
-              <YAxis tick={{ fontSize: 18 }} unit=" ml" tickFormatter={(v) => v} />
-              <Tooltip formatter={(v) => [`${v} ml`, 'Feed']} />
+              <YAxis tick={{ fontSize: 18 }} tickFormatter={(v) => `${v} ml`} />
+              <Tooltip formatter={(v) => [`${v} ml`, '奶量']} />
               <Bar dataKey="ml" fill="#ff6b6b" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
