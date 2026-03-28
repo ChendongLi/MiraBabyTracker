@@ -5,20 +5,18 @@ import { useTranslation } from 'react-i18next';
 import { logActivity, transcribeAudio, getEvents, type EventRow } from '@/lib/api';
 import EventFeed from './EventFeed';
 
-export default function LogTab() {
+interface Props { initialEvents?: EventRow[]; }
+
+export default function LogTab({ initialEvents = [] }: Props) {
   const { t } = useTranslation();
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [recording, setRecording] = useState(false);
-  const [events, setEvents] = useState<EventRow[]>([]);
+  const [events, setEvents] = useState<EventRow[]>(initialEvents);
   const [error, setError] = useState<string | null>(null);
   const [confirmation, setConfirmation] = useState<string | null>(null);
   const mediaRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
-
-  useEffect(() => {
-    getEvents().then(setEvents).catch(console.error);
-  }, []);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
