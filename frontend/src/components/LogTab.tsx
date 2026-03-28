@@ -178,7 +178,7 @@ export default function LogTab() {
                 WebkitTapHighlightColor: 'transparent',
                 touchAction: 'none', userSelect: 'none',
               }}
-              aria-label={recording ? 'Stop recording' : 'Hold to record'}
+              aria-label={recording ? '停止录音' : '按住录音'}
             >
               {recording ? '⏹' : '🎙'}
             </button>
@@ -187,7 +187,7 @@ export default function LogTab() {
           {/* Right: hint + send */}
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 6 }}>
             <span style={{ fontSize: 17, fontWeight: 500, color: recording ? '#ff6b6b' : '#ccc', transition: 'color 0.2s' }}>
-              {recording ? '🔴 Recording… release to stop' : 'Hold to record'}
+              {recording ? '🔴 录音中… 松开停止' : '按住录音'}
             </span>
             <button
               type="submit"

@@ -47,7 +47,7 @@ export default function EventFeed({ events }: Props) {
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontWeight: 600, fontSize: 26 }}>
               {t(`events.${ev.event_type}`)}
-              {ev.event_type === 'feed' && ev.feed_amount_ml ? ` · ${ev.feed_amount_ml}ml` : ''}
+              {ev.event_type === 'feed' && ev.feed_amount_ml ? ` · ${ev.feed_amount_ml}毫升` : ''}
               {ev.event_type === 'sleep' && ev.duration_minutes
                 ? ` · ${Math.floor(ev.duration_minutes / 60)}h ${ev.duration_minutes % 60}m`
                 : ''}
@@ -59,7 +59,7 @@ export default function EventFeed({ events }: Props) {
             )}
           </div>
           <div style={{ fontSize: 16, color: '#bbb', flexShrink: 0, paddingTop: 2 }}>
-            {format(new Date(ev.created_at), 'h:mm a', { timeZone: 'America/Los_Angeles' })}
+            {format(new Date(ev.created_at), 'M月d日 HH:mm', { timeZone: 'America/Los_Angeles' })}
           </div>
         </div>
       ))}
