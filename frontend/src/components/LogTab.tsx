@@ -21,6 +21,7 @@ export default function LogTab({ initialEvents = [] }: Props) {
 
   // Warm up mic permission on first render so the browser never asks mid-session
   useEffect(() => {
+    getEvents().then(setEvents).catch(console.error);
     navigator.mediaDevices.getUserMedia({ audio: true })
       .then((s) => { streamRef.current = s; })
       .catch(() => {}); // silent — user will see error when they actually tap mic
