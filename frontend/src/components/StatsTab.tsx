@@ -67,7 +67,7 @@ export default function StatsTab() {
     .filter((e) => e.event_type === 'feed' && e.feed_amount_ml && e.created_at.startsWith(todayPT.substring(0, 10)))
     .map((e) => ({
       time: formatTZ(new Date(e.created_at), 'HH:mm', { timeZone: TZ }),
-      ml: e.feed_amount_ml ?? 0,
+      ml: Number(e.feed_amount_ml ?? 0),
     }))
     .sort((a, b) => a.time.localeCompare(b.time));
 
@@ -137,7 +137,7 @@ export default function StatsTab() {
             <BarChart data={feedChartData} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
               <XAxis dataKey="time" tick={{ fontSize: 17 }} />
-              <YAxis tick={{ fontSize: 18 }} tickFormatter={(v) => `${v} ml`} />
+              <YAxis tick={{ fontSize: 18 }} tickFormatter={(v) => `${v} ml`} domain={[0, 'auto']} allowDecimals={false} />
               <Tooltip formatter={(v) => [`${v} ml`, '奶量']} />
               <Bar dataKey="ml" fill="#ff6b6b" radius={[4, 4, 0, 0]} />
             </BarChart>
