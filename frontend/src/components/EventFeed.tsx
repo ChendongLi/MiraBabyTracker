@@ -88,7 +88,7 @@ export default function EventFeed({ events, onDelete }: Props) {
                 )}
               </div>
               <div style={{ fontSize: 16, color: '#bbb', flexShrink: 0, paddingTop: 2 }}>
-                {format(new Date(ev.created_at), 'M月d日 HH:mm', { timeZone: 'America/Los_Angeles' })}
+                {format(new Date(ev.started_at ?? ev.created_at), 'M月d日 HH:mm', { timeZone: 'America/Los_Angeles' })}
               </div>
             </div>
 
