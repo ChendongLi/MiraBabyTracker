@@ -87,7 +87,7 @@ export default function StatsTab() {
   return (
     <div style={{ overflowY: 'auto', height: '100%', padding: '16px' }}>
       {/* Summary cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 10, marginBottom: 24 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 24 }}>
         {[
           { label: t('summary.last_feed'), value: summary?.last_feed_at },
           { label: t('summary.last_sleep'), value: summary?.last_sleep_at ?? summary?.last_sleep_end_at },
