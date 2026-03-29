@@ -95,7 +95,7 @@ async def get_summary(date_str: str = Query(default=None, alias="date")) -> Summ
             FROM events e
             LEFT JOIN feed_details fd ON fd.event_id = e.id
             WHERE e.baby_id = %s
-              AND DATE(e.created_at) = %s::date
+              AND (e.created_at AT TIME ZONE 'America/Los_Angeles')::date = %s::date
             """,
             (BABY_ID, target_date),
         )

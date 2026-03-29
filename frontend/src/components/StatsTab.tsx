@@ -20,7 +20,10 @@ export default function StatsTab() {
   async function load() {
     setLoading(true);
     try {
-      const [s, w] = await Promise.all([getSummary(), getWeekEvents()]);
+      const TZ2 = 'America/Los_Angeles';
+      const { format: fmtTZ2 } = await import('date-fns-tz');
+      const todayForSummary = fmtTZ2(new Date(), 'yyyy-MM-dd', { timeZone: TZ2 });
+      const [s, w] = await Promise.all([getSummary(todayForSummary), getWeekEvents()]);
       setSummary(s);
       setWeekEvents(w);
     } finally {
