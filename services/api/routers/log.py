@@ -68,12 +68,30 @@ async def log_activity(request: LogRequest) -> LogResponse:
 
     ai_url = os.environ["AI_SERVICE_URL"]
 
+    # Look up the last open sleep (no duration, no ended_at) to provide as context
+    last_open_sleep_started_at = None
+    with db_conn() as conn:
+        cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        cur.execute(
+            """
+            SELECT started_at FROM events
+            WHERE baby_id = %s AND event_type = 'sleep'
+              AND ended_at IS NULL AND duration_minutes IS NULL
+              AND started_at IS NOT NULL
+            ORDER BY created_at DESC LIMIT 1
+            """,
+            (BABY_ID,),
+        )
+        row = cur.fetchone()
+        if row and row["started_at"]:
+            last_open_sleep_started_at = row["started_at"].isoformat()
+
     # Call ai-service to parse input
     async with httpx.AsyncClient(timeout=30.0) as client:
         try:
             resp = await client.post(
                 f"{ai_url}/parse",
-                json={"input": request.input},
+                json={"input": request.input, "last_open_sleep_started_at": last_open_sleep_started_at},
             )
             resp.raise_for_status()
         except httpx.TimeoutException as e:
