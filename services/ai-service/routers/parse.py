@@ -33,6 +33,7 @@ Rules:
 - current_time is provided in UTC. The user is in Pacific Time (UTC-7 or UTC-8, use UTC-7 for now).
 - If times are relative (e.g. "just now", "刚才"), use current_time as reference.
 - If the user says "last night" or "昨晚", the date is yesterday (Pacific Time). Morning times (e.g. "9am") are today.
+- IMPORTANT: If the input mentions an explicit time (e.g. "10点", "10am", "10:30", "下午3点"), you MUST set started_at to that time (today in Pacific Time, converted to UTC). Do NOT fall back to current_time when an explicit time is given. Examples: "10点换尿布" → started_at = today 10:00 PT in UTC; "下午3点喂奶" → started_at = today 15:00 PT in UTC.
 - For sleep with both start and end: set started_at, ended_at, and compute duration_minutes = (ended_at - started_at) in minutes.
 - If only start is given, set started_at only. If only end is given, set ended_at only.
 - If only duration is given (e.g. "slept 2 hours"), set duration_minutes only.
