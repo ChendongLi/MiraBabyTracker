@@ -52,7 +52,7 @@ export default function StatsTab() {
   const activityRows = weekEvents
     .filter((e) => ['outdoor', 'bath', 'unknown'].includes(e.event_type) && isTodayPT(e.created_at))
     .map((e) => ({
-      time: formatTZ(new Date(e.created_at), 'HH:mm', { timeZone: TZ }),
+      time: formatTZ(new Date(e.started_at ?? e.created_at), 'HH:mm', { timeZone: TZ }),
       type: e.event_type,
       duration: e.duration_minutes ? `${e.duration_minutes}分钟` : '—',
       notes: e.notes || e.raw_input || '—',
@@ -67,7 +67,7 @@ export default function StatsTab() {
   const diaperRows = weekEvents
     .filter((e) => e.event_type === 'diaper' && isTodayPT(e.created_at))
     .map((e) => ({
-      time: formatTZ(new Date(e.created_at), 'HH:mm', { timeZone: TZ }),
+      time: formatTZ(new Date(e.started_at ?? e.created_at), 'HH:mm', { timeZone: TZ }),
       type: e.diaper_type || '—',
     }))
     .sort((a, b) => a.time.localeCompare(b.time));
@@ -75,7 +75,7 @@ export default function StatsTab() {
   const  feedChartData = weekEvents
     .filter((e) => e.event_type === 'feed' && e.feed_amount_ml && isTodayPT(e.created_at))
     .map((e) => ({
-      time: formatTZ(new Date(e.created_at), 'HH:mm', { timeZone: TZ }),
+      time: formatTZ(new Date(e.started_at ?? e.created_at), 'HH:mm', { timeZone: TZ }),
       ml: Number(e.feed_amount_ml ?? 0),
     }))
     .sort((a, b) => a.time.localeCompare(b.time));
