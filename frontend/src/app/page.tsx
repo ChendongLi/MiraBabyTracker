@@ -1,50 +1,23 @@
-'use client';
+export const dynamic = 'force-dynamic';
 
-import { useState } from 'react';
-import '../lib/i18n';
-import { useTranslation } from 'react-i18next';
-import LogTab from '@/components/LogTab';
-import StatsTab from '@/components/StatsTab';
+import ClientApp from '@/components/ClientApp';
+import type { EventRow } from '@/lib/api';
 
-export default function Home() {
-  const { t } = useTranslation();
-  const [tab, setTab] = useState<'log' | 'stats'>('log');
+async function getInitialEvents(): Promise<EventRow[]> {
+  try {
+    const apiUrl = process.env.API_SERVICE_URL;
+    if (!apiUrl) return [];
+    const res = await fetch(`${apiUrl}/api/events?limit=50`, {
+      cache: 'no-store',
+    });
+    if (!res.ok) return [];
+    return res.json();
+  } catch {
+    return [];
+  }
+}
 
-  return (
-    <main style={{ display: 'flex', flexDirection: 'column', height: '100dvh' }}>
-      {/* Tab bar */}
-      <nav style={{
-        display: 'flex',
-        borderBottom: '1px solid #e0e0e0',
-        background: '#fff',
-        flexShrink: 0,
-      }}>
-        {(['log', 'stats'] as const).map((id) => (
-          <button
-            key={id}
-            onClick={() => setTab(id)}
-            style={{
-              flex: 1,
-              padding: '14px 0',
-              border: 'none',
-              background: 'none',
-              fontSize: 21,
-              fontWeight: tab === id ? 600 : 400,
-              color: tab === id ? '#ff6b6b' : '#888',
-              borderBottom: tab === id ? '2px solid #ff6b6b' : '2px solid transparent',
-              cursor: 'pointer',
-              transition: 'all 0.15s',
-            }}
-          >
-            {t(`tabs.${id}`)}
-          </button>
-        ))}
-      </nav>
-
-      {/* Tab content */}
-      <div style={{ flex: 1, overflow: 'hidden' }}>
-        {tab === 'log' ? <LogTab /> : <StatsTab />}
-      </div>
-    </main>
-  );
+export default async function Home() {
+  const initialEvents = await getInitialEvents();
+  return <ClientApp initialEvents={initialEvents} />;
 }

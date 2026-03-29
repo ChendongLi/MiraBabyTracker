@@ -95,7 +95,7 @@ async def get_summary(date_str: str = Query(default=None, alias="date")) -> Summ
             FROM events e
             LEFT JOIN feed_details fd ON fd.event_id = e.id
             WHERE e.baby_id = %s
-              AND DATE(e.created_at) = %s::date
+              AND (e.created_at AT TIME ZONE 'America/Los_Angeles')::date = %s::date
             """,
             (BABY_ID, target_date),
         )
@@ -129,5 +129,28 @@ async def get_week_events() -> list[EventRow]:
         )
         rows = cur.fetchall()
         return [EventRow(id=str(r["id"]), **{k: v for k, v in r.items() if k != "id"}) for r in rows]
+    finally:
+        release_conn(conn)
+
+
+@router.delete("/api/events/{event_id}", status_code=204)
+async def delete_event(event_id: str) -> None:
+    """Delete a single event (cascades to feed_details / diaper_details)."""
+    conn = get_conn()
+    try:
+        cur = conn.cursor()
+        cur.execute(
+            "DELETE FROM events WHERE id = %s AND baby_id = %s",
+            (event_id, BABY_ID),
+        )
+        if cur.rowcount == 0:
+            raise HTTPException(status_code=404, detail="Event not found")
+        conn.commit()
+        logger.info("Deleted event %s", event_id)
+    except HTTPException:
+        raise
+    except Exception:
+        conn.rollback()
+        raise
     finally:
         release_conn(conn)

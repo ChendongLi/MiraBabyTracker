@@ -2,22 +2,32 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { logActivity, transcribeAudio, getEvents, type EventRow } from '@/lib/api';
+import { logActivity, transcribeAudio, getEvents, deleteEvent, type EventRow } from '@/lib/api';
 import EventFeed from './EventFeed';
 
-export default function LogTab() {
+interface Props { initialEvents?: EventRow[]; }
+
+export default function LogTab({ initialEvents = [] }: Props) {
   const { t } = useTranslation();
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [recording, setRecording] = useState(false);
-  const [events, setEvents] = useState<EventRow[]>([]);
+  const [events, setEvents] = useState<EventRow[]>(initialEvents);
   const [error, setError] = useState<string | null>(null);
   const [confirmation, setConfirmation] = useState<string | null>(null);
   const mediaRef = useRef<MediaRecorder | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);  // persistent stream
   const chunksRef = useRef<Blob[]>([]);
 
+  // Warm up mic permission on first render so the browser never asks mid-session
   useEffect(() => {
     getEvents().then(setEvents).catch(console.error);
+    navigator.mediaDevices.getUserMedia({ audio: true })
+      .then((s) => { streamRef.current = s; })
+      .catch(() => {}); // silent — user will see error when they actually tap mic
+    return () => {
+      streamRef.current?.getTracks().forEach((t) => t.stop());
+    };
   }, []);
 
   async function handleSubmit(e: React.FormEvent) {
@@ -39,21 +49,34 @@ export default function LogTab() {
     }
   }
 
+  async function getStream(): Promise<MediaStream> {
+    // Reuse existing live stream if available
+    if (streamRef.current && streamRef.current.active) {
+      return streamRef.current;
+    }
+    // Re-acquire if stream was stopped (e.g. browser suspended it)
+    const s = await navigator.mediaDevices.getUserMedia({ audio: true });
+    streamRef.current = s;
+    return s;
+  }
+
   async function startRecording() {
     setError(null);
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const stream = await getStream();
       const mimeType = MediaRecorder.isTypeSupported('audio/webm')
         ? 'audio/webm'
         : MediaRecorder.isTypeSupported('audio/mp4')
         ? 'audio/mp4'
         : '';
-      const recorder = mimeType ? new MediaRecorder(stream, { mimeType }) : new MediaRecorder(stream);
+      const recorder = mimeType
+        ? new MediaRecorder(stream, { mimeType })
+        : new MediaRecorder(stream);
       const ext = mimeType.includes('mp4') ? 'mp4' : 'webm';
       chunksRef.current = [];
       recorder.ondataavailable = (e) => chunksRef.current.push(e.data);
       recorder.onstop = async () => {
-        stream.getTracks().forEach((t) => t.stop());
+        // Don't stop stream tracks — keep stream alive for next recording
         const blob = new Blob(chunksRef.current, { type: recorder.mimeType });
         if (blob.size === 0) { setError(t('errors.no_speech')); return; }
         setLoading(true);
@@ -74,6 +97,12 @@ export default function LogTab() {
     }
   }
 
+  async function handleDelete(id: string) {
+    await deleteEvent(id);
+    const updated = await getEvents();
+    setEvents(updated);
+  }
+
   function stopRecording() {
     mediaRef.current?.stop();
     mediaRef.current = null;
@@ -86,7 +115,7 @@ export default function LogTab() {
       <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       {/* Event feed */}
       <div style={{ flex: 1, overflowY: 'auto', padding: '12px 16px' }}>
-        <EventFeed events={events} />
+        <EventFeed events={events} onDelete={handleDelete} />
       </div>
 
       {/* Error */}
@@ -116,7 +145,6 @@ export default function LogTab() {
           flexShrink: 0,
         }}
       >
-
         {/* Textarea */}
         <textarea
           value={input}
@@ -178,7 +206,7 @@ export default function LogTab() {
                 WebkitTapHighlightColor: 'transparent',
                 touchAction: 'none', userSelect: 'none',
               }}
-              aria-label={recording ? 'Stop recording' : 'Hold to record'}
+              aria-label={recording ? '停止录音' : '按住录音'}
             >
               {recording ? '⏹' : '🎙'}
             </button>
@@ -187,7 +215,7 @@ export default function LogTab() {
           {/* Right: hint + send */}
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 6 }}>
             <span style={{ fontSize: 17, fontWeight: 500, color: recording ? '#ff6b6b' : '#ccc', transition: 'color 0.2s' }}>
-              {recording ? '🔴 Recording… release to stop' : 'Hold to record'}
+              {recording ? '🔴 录音中… 松开停止' : '按住录音'}
             </span>
             <button
               type="submit"
