@@ -43,9 +43,11 @@ export default function StatsTab() {
   // Build today's feed line chart (Pacific Time)
   const TZ = 'America/Los_Angeles';
   const todayPT = formatTZ(new Date(), 'yyyy-MM-dd', { timeZone: TZ });
+  const isTodayPT = (utcStr: string) =>
+    formatTZ(new Date(utcStr), 'yyyy-MM-dd', { timeZone: TZ }) === todayPT;
   // Today's outdoor/bath activity rows (Pacific Time)
   const activityRows = weekEvents
-    .filter((e) => ['outdoor', 'bath', 'unknown'].includes(e.event_type) && e.created_at.startsWith(todayPT.substring(0, 10)))
+    .filter((e) => ['outdoor', 'bath', 'unknown'].includes(e.event_type) && isTodayPT(e.created_at))
     .map((e) => ({
       time: formatTZ(new Date(e.created_at), 'HH:mm', { timeZone: TZ }),
       type: e.event_type,
@@ -54,9 +56,13 @@ export default function StatsTab() {
     }))
     .sort((a, b) => a.time.localeCompare(b.time));
 
+  const outdoorTotalMins = weekEvents
+    .filter((e) => e.event_type === 'outdoor' && isTodayPT(e.created_at))
+    .reduce((sum, e) => sum + (e.duration_minutes ?? 0), 0);
+
   // Today's diaper rows (Pacific Time)
   const diaperRows = weekEvents
-    .filter((e) => e.event_type === 'diaper' && e.created_at.startsWith(todayPT.substring(0, 10)))
+    .filter((e) => e.event_type === 'diaper' && isTodayPT(e.created_at))
     .map((e) => ({
       time: formatTZ(new Date(e.created_at), 'HH:mm', { timeZone: TZ }),
       type: e.diaper_type || '—',
@@ -64,7 +70,7 @@ export default function StatsTab() {
     .sort((a, b) => a.time.localeCompare(b.time));
 
   const  feedChartData = weekEvents
-    .filter((e) => e.event_type === 'feed' && e.feed_amount_ml && e.created_at.startsWith(todayPT.substring(0, 10)))
+    .filter((e) => e.event_type === 'feed' && e.feed_amount_ml && isTodayPT(e.created_at))
     .map((e) => ({
       time: formatTZ(new Date(e.created_at), 'HH:mm', { timeZone: TZ }),
       ml: Number(e.feed_amount_ml ?? 0),
@@ -78,7 +84,7 @@ export default function StatsTab() {
   return (
     <div style={{ overflowY: 'auto', height: '100%', padding: '16px' }}>
       {/* Summary cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10, marginBottom: 24 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 10, marginBottom: 24 }}>
         {[
           { label: t('summary.last_feed'), value: summary?.last_feed_at },
           { label: t('summary.last_sleep'), value: summary?.last_sleep_at ?? summary?.last_sleep_end_at },
@@ -105,6 +111,7 @@ export default function StatsTab() {
             : '--' },
           { label: '🍼 总奶量', value: summary ? `${summary.total_feed_ml}毫升` : '--' },
           { label: '💧 换尿布', value: summary ? `${summary.diaper_count}次` : '--' },
+          { label: '🌳 户外', value: outdoorTotalMins > 0 ? `${outdoorTotalMins}分钟` : '--' },
         ].map(({ label, value }) => (
           <div key={label} style={{ background: '#fff', borderRadius: 12, padding: '12px 10px', textAlign: 'center', boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
             <div style={{ fontSize: 14, color: '#888', marginBottom: 4 }}>{label}</div>
