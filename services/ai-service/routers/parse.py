@@ -36,7 +36,7 @@ Rules:
 - For sleep with both start and end: set started_at, ended_at, and compute duration_minutes = (ended_at - started_at) in minutes.
 - If only start is given, set started_at only. If only end is given, set ended_at only.
 - If only duration is given (e.g. "slept 2 hours"), set duration_minutes only.
-- IMPORTANT: If last_open_sleep_started_at is provided in context AND the input describes waking up or sleep ending, set started_at = last_open_sleep_started_at and compute duration_minutes = (wake_time - last_open_sleep_started_at) in minutes. Do NOT guess a start time.
+- IMPORTANT: If today_events context is provided, use it to compute accurate durations. If the input describes sleep ending/waking up and there is an open sleep (no duration, no ended_at) in today_events, use its started_at as the start time and compute duration_minutes accurately. Do NOT guess start times when prior events give you the answer. Also use context to avoid duplicate entries and understand sequences.
 - For all times, convert to UTC ISO8601 (e.g. "11pm PT last night" = yesterday 06:00 UTC).
 - If input is unclear, set event_type to "unknown" and put best guess in notes.
 - For diapers: default diaper_type to "wet" unless poo/soiled/stinky is explicitly mentioned, then use "soiled". Use "mixed" only if both are mentioned.
@@ -46,7 +46,7 @@ Rules:
 
 class ParseRequest(BaseModel):
     input: str
-    last_open_sleep_started_at: str | None = None
+    today_events: list[dict] | None = None
 
 
 class FeedDetails(BaseModel):
@@ -105,7 +105,7 @@ async def parse_activity(request: ParseRequest) -> ParseResponse:
             messages=[
                 {
                     "role": "user",
-                    "content": f"current_time: {current_time}\nlast_open_sleep_started_at: {request.last_open_sleep_started_at or 'none'}\n\ninput: {request.input}",
+                    "content": f"current_time: {current_time}\ntoday_events: {request.today_events or []}\n\ninput: {request.input}",
                 }
             ],
         )
