@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { logActivity, transcribeAudio, getEvents, type EventRow } from '@/lib/api';
+import { logActivity, transcribeAudio, getEvents, deleteEvent, type EventRow } from '@/lib/api';
 import EventFeed from './EventFeed';
 
 interface Props { initialEvents?: EventRow[]; }
@@ -21,6 +21,7 @@ export default function LogTab({ initialEvents = [] }: Props) {
 
   // Warm up mic permission on first render so the browser never asks mid-session
   useEffect(() => {
+    getEvents().then(setEvents).catch(console.error);
     navigator.mediaDevices.getUserMedia({ audio: true })
       .then((s) => { streamRef.current = s; })
       .catch(() => {}); // silent — user will see error when they actually tap mic
@@ -96,6 +97,12 @@ export default function LogTab({ initialEvents = [] }: Props) {
     }
   }
 
+  async function handleDelete(id: string) {
+    await deleteEvent(id);
+    const updated = await getEvents();
+    setEvents(updated);
+  }
+
   function stopRecording() {
     mediaRef.current?.stop();
     mediaRef.current = null;
@@ -108,7 +115,7 @@ export default function LogTab({ initialEvents = [] }: Props) {
       <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       {/* Event feed */}
       <div style={{ flex: 1, overflowY: 'auto', padding: '12px 16px' }}>
-        <EventFeed events={events} />
+        <EventFeed events={events} onDelete={handleDelete} />
       </div>
 
       {/* Error */}
